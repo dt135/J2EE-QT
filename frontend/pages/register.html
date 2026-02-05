@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - BookStore</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- ============================================
+         REGISTER PAGE
+         ============================================ -->
+    <div class="auth-container">
+        <div class="auth-box">
+            <!-- Header -->
+            <div class="auth-header">
+                <i class="fas fa-user-plus"></i>
+                <h2>Đăng ký</h2>
+                <p>Tạo tài khoản mới tại BookStore</p>
+            </div>
+            
+            <!-- Alert Message -->
+            <div id="register-alert" class="alert alert-danger" style="display: none;"></div>
+            
+            <!-- Register Form -->
+            <form id="register-form">
+                <!-- Username -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user"></i> Tên đăng nhập
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="username" 
+                        name="username"
+                        placeholder="Nhập tên đăng nhập"
+                        required
+                        minlength="3"
+                    >
+                </div>
+                
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <input 
+                        type="email" 
+                        class="form-control" 
+                        id="email" 
+                        name="email"
+                        placeholder="Nhập email của bạn"
+                        required
+                    >
+                </div>
+                
+                <!-- Password -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Mật khẩu
+                    </label>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="password" 
+                        name="password"
+                        placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                        required
+                        minlength="6"
+                    >
+                </div>
+                
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Xác nhận mật khẩu
+                    </label>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="confirmPassword" 
+                        name="confirmPassword"
+                        placeholder="Nhập lại mật khẩu"
+                        required
+                    >
+                </div>
+                
+                <!-- Terms -->
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            Tôi đồng ý với <a href="#">điều khoản sử dụng</a>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-auth">
+                    <i class="fas fa-user-plus"></i> Đăng ký
+                </button>
+            </form>
+            
+            <!-- Footer -->
+            <div class="auth-footer">
+                <p>Đã có tài khoản? <a href="./login.html">Đăng nhập</a></p>
+                <p class="mt-2">
+                    <a href="./index.html"><i class="fas fa-arrow-left"></i> Quay lại trang chủ</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================
+         API ENDPOINTS DOCUMENTATION
+         ============================================
+         
+         POST /api/auth/register
+         - Request: { username: string, email: string, password: string }
+         - Response: { message: string, user: { id, username, email, role } }
+         - Error: { message: string }
+         
+         Headers gửi đi:
+         - Content-Type: application/json
+         
+         Validate:
+         - Username: ít nhất 3 ký tự
+         - Email: định dạng email hợp lệ
+         - Password: ít nhất 6 ký tự
+         - ConfirmPassword: phải khớp với password
+         ============================================ -->
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lỗi - BookStore</title>
+    <script>
+        // Redirect về trang login sau 3 giây
+        setTimeout(function() {
+            window.location.href = 'http://localhost:5500/frontend/pages/login.html?error=oauth2_failed';
+        }, 3000);
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .error-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .countdown {
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>❌ Đăng nhập thất bại</h1>
+        <p>Có lỗi xảy ra trong quá trình đăng nhập bằng Google.</p>
+        <p>Bạn sẽ được chuyển về trang đăng nhập trong <span class="countdown">3</span> giây...</p>
+        <p><a href="http://localhost:5500/frontend/pages/login.html">Nhấn vào đây để chuyển ngay</a></p>
+    </div>
+
+    <script>
+        // Countdown
+        let count = 3;
+        const countdownElement = document.querySelector('.countdown');
+        const interval = setInterval(function() {
+            count--;
+            if (count > 0) {
+                countdownElement.textContent = count;
+            } else {
+                clearInterval(interval);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

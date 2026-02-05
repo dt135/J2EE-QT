@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - BookStore</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- ============================================
+         NAVBAR
+         ============================================ -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="./index.html">
+                <i class="fas fa-book-open"></i> BookStore
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index.html">
+                            <i class="fas fa-home"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-cart">
+                        <a class="nav-link active" href="./cart.html">
+                            <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                            <span id="cart-badge" class="badge bg-danger" style="display: none;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-admin" style="display: none;">
+                        <a class="nav-link" href="./admin.html">
+                            <i class="fas fa-cog"></i> Quản lý
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown" id="nav-username">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="username-display"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="logout-btn">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- ============================================
+         CART CONTENT
+         ============================================ -->
+    <div class="container my-5">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="mb-0">
+                    <i class="fas fa-shopping-cart"></i> Giỏ hàng của bạn
+                </h2>
+                <p class="text-muted">Quản lý sách trong giỏ hàng và tiến hành thanh toán</p>
+            </div>
+        </div>
+        
+        <!-- Cart Container -->
+        <div id="cart-container" class="cart-container">
+            <!-- Cart Header -->
+            <div class="cart-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shopping-bag"></i> 
+                            Sản phẩm (<span id="cart-item-count">0</span>)
+                        </h5>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <a href="./index.html" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left"></i> Tiếp tục mua sắm
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cart Items -->
+            <div id="cart-items-container">
+                <!-- Cart items will be loaded here by JavaScript -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Đang tải giỏ hàng...</p>
+                </div>
+            </div>
+            
+            <!-- Cart Summary -->
+            <div id="cart-summary" class="cart-summary" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-truck fa-2x text-success me-3"></i>
+                            <div>
+                                <h6 class="mb-0">Miễn phí vận chuyển</h6>
+                                <small class="text-muted">Cho đơn hàng từ 200.000đ</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="cart-total">
+                            <span class="cart-total-label">Tổng cộng:</span>
+                            <span class="cart-total-value" id="cart-total-value">0đ</span>
+                        </div>
+                        <button id="checkout-btn" class="btn btn-success btn-lg mt-3">
+                            <i class="fas fa-credit-card"></i> Thanh toán ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================
+         FOOTER
+         ============================================ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                    <p>Hệ thống quản lý và bán sách trực tuyến</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên kết</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="./index.html">Trang chủ</a></li>
+                        <li><a href="./cart.html">Giỏ hàng</a></li>
+                        <li><a href="./admin.html">Quản lý</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p><i class="fas fa-envelope"></i> support@bookstore.com</p>
+                    <p><i class="fas fa-phone"></i> 1900 1234</p>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 BookStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- ============================================
+         API ENDPOINTS DOCUMENTATION
+         ============================================
+         
+         1. LẤY GIỎ HÀNG
+            GET /api/cart
+            - Headers: Authorization: Bearer <token> (required)
+            - Response: {
+                items: [
+                  {
+                    book: { _id, title, author, price, category },
+                    quantity: number
+                  }
+                ],
+                total: number
+              }
+         
+         2. CẬP NHẬT SỐ LƯỢNG
+            PUT /api/cart/update
+            - Headers: Authorization: Bearer <token> (required)
+            - Request: { bookId: string, quantity: number }
+            - Response: { message: string, cart: {...} }
+         
+         3. XÓA KHỎI GIỎ
+            DELETE /api/cart/remove/:bookId
+            - Headers: Authorization: Bearer <token> (required)
+            - Response: { message: string, cart: {...} }
+         
+         4. THANH TOÁN
+            POST /api/checkout
+            - Headers: Authorization: Bearer <token> (required)
+            - Request: { items: [...], total: number }
+            - Response: { message: string, order: {...} }
+         ============================================ -->
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/cart.js"></script>
+</body>
+</html>

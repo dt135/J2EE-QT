@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore - Cửa hàng sách trực tuyến</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- ============================================
+         NAVBAR
+         ============================================ -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="./index.html">
+                <i class="fas fa-book-open"></i> BookStore
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="./index.html">
+                            <i class="fas fa-home"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-cart" style="display: none;">
+                        <a class="nav-link" href="./cart.html">
+                            <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                            <span id="cart-badge" class="badge bg-danger" style="display: none;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-admin" style="display: none;">
+                        <a class="nav-link" href="./admin.html">
+                            <i class="fas fa-cog"></i> Quản lý
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item" id="nav-login">
+                        <a class="nav-link" href="./login.html">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-register">
+                        <a class="nav-link" href="./register.html">
+                            <i class="fas fa-user-plus"></i> Đăng ký
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown" id="nav-username" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="username-display"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="logout-btn">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- ============================================
+         MAIN CONTENT
+         ============================================ -->
+    <div class="container my-5">
+        <!-- Hero Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="p-5 bg-primary text-white rounded-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h1 class="display-4 fw-bold">
+                        <i class="fas fa-book"></i> Chào mừng đến BookStore
+                    </h1>
+                    <p class="lead">Khám phá kho tàng sách đa dạng với giá tốt nhất</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search & Filter Section -->
+        <div class="search-section">
+            <div class="row g-3 align-items-end">
+                <!-- Search Box -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </label>
+                    <div class="search-box">
+                        <input
+                            type="text"
+                            class="form-control form-control-lg"
+                            id="search-input"
+                            placeholder="Nhập tên sách..."
+                        >
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-tags"></i> Thể loại
+                    </label>
+                    <select class="form-select form-select-lg" id="category-filter">
+                        <option value="all">Tất cả</option>
+                        <!-- Các thể loại sẽ được tải từ database -->
+                    </select>
+                </div>
+
+                <!-- Sort -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-sort"></i> Sắp xếp
+                    </label>
+                    <select class="form-select form-select-lg" id="sort-select">
+                        <option value="">Mặc định</option>
+                        <option value="price-asc">Giá: Thấp → Cao</option>
+                        <option value="price-desc">Giá: Cao → Thấp</option>
+                        <option value="name-asc">Tên: A → Z</option>
+                        <option value="name-desc">Tên: Z → A</option>
+                    </select>
+                </div>
+
+                <!-- Refresh Button -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">&nbsp;</label>
+                    <div class="d-grid">
+                        <button class="btn btn-outline-primary btn-lg" id="btn-refresh">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Book Count -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-book"></i> Danh sách sách
+            </h2>
+            <span id="book-count" class="text-muted">Đang tải...</span>
+        </div>
+        
+        <!-- Books Container -->
+        <div id="books-container">
+            <!-- Books will be loaded here by JavaScript -->
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Đang tải danh sách sách...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================
+         FOOTER
+         ============================================ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-book-open"></i> BookStore</h5>
+                    <p>Hệ thống quản lý và bán sách trực tuyến</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên kết</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="./index.html">Trang chủ</a></li>
+                        <li><a href="./cart.html">Giỏ hàng</a></li>
+                        <li><a href="./admin.html">Quản lý</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p><i class="fas fa-envelope"></i> support@bookstore.com</p>
+                    <p><i class="fas fa-phone"></i> 1900 1234</p>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 BookStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- ============================================
+         API ENDPOINTS DOCUMENTATION
+         ============================================
+         
+         1. LẤY DANH SÁCH SÁCH
+            GET /api/books
+            - Response: { books: [...] }
+            - Headers: Authorization: Bearer <token> (optional)
+         
+         2. TÌM KIẾM SÁCH (Client-side filtering)
+            - Lọc theo keyword: tên sách, tác giả, category
+            - Lọc theo giá: min và max
+            - Sắp xếp: theo giá hoặc tên
+         
+         3. THÊM VÀO GIỎ HÀNG
+            POST /api/cart/add
+            - Request: { bookId: string, quantity: number }
+            - Headers: Authorization: Bearer <token> (required)
+            - Response: { message: string, cart: {...} }
+         
+         4. LẤY GIỎ HÀNG
+            GET /api/cart
+            - Headers: Authorization: Bearer <token> (required)
+            - Response: { items: [...], total: number }
+         ============================================ -->
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/book.js"></script>
+</body>
+</html>
