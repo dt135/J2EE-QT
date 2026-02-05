@@ -2,6 +2,7 @@ package com.app.dangdoanhtoai2280603283.controller;
 
 import com.app.dangdoanhtoai2280603283.dto.ApiResponse;
 import com.app.dangdoanhtoai2280603283.dto.CheckoutResponse;
+import com.app.dangdoanhtoai2280603283.dto.OrderHistoryResponse;
 import com.app.dangdoanhtoai2280603283.dto.PageResponse;
 import com.app.dangdoanhtoai2280603283.model.Invoice;
 import com.app.dangdoanhtoai2280603283.model.Item;
@@ -25,6 +26,8 @@ import java.util.Map;
 /**
  * Controller xu ly Checkout & Invoice (BAI 5)
  * - POST /checkout: Thanh toan gio hang
+ * - GET /orders/history: Xem lich su don hang (USER)
+ * - GET /orders/:id: Xem chi tiet don hang (USER)
  * - GET /invoices: Xem lich su hoa don
  * - GET /invoices/all: Xem tat ca hoa don (ADMIN)
  * - GET /invoices/:id: Xem chi tiet hoa don
@@ -55,6 +58,60 @@ public class InvoiceController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Thanh toan thanh cong", response));
+    }
+
+    /**
+     * XEM LICH SU DON HANG CUA USER
+     * GET /orders/history
+     *
+     * Chuyen muc:
+     * - Chao USER co the xem don hang cua chinh minh
+     * - Sap xep theo createdAt giam dan
+     * - Phan trang de xu ly nhieu don hang
+     */
+    @GetMapping("/orders/history")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<OrderHistoryResponse>> getOrderHistory(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit) {
+        User user = (User) authentication.getPrincipal();
+        OrderHistoryResponse response = invoiceService.getOrderHistory(user.getId(), page, limit);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * XEM CHI TIET DON HANG
+     * GET /orders/:id
+     *
+     * Chi USER co the xem chi tiet don hang cua chinh minh
+     */
+    @GetMapping("/orders/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<OrderHistoryResponse.OrderDetail>> getOrderDetail(
+            @PathVariable String id,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        OrderHistoryResponse.OrderDetail detail = invoiceService.getOrderDetail(id, user.getId());
+        return ResponseEntity.ok(ApiResponse.success(detail));
+    }
+
+    /**
+     * DA NHAN DUOC HANG (USER)
+     * PUT /orders/:id/received
+     *
+     * User danh dau don hang la da nhan duoc
+     * Trạng thái đơn hàng sẽ cập nhật thành COMPLETED
+     * Tính vào doanh thu
+     */
+    @PutMapping("/orders/{id}/received")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Void>> markOrderAsReceived(
+            @PathVariable String id,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        invoiceService.markOrderAsReceived(id, user.getId());
+        return ResponseEntity.ok(ApiResponse.success("Đã xác nhận nhận hàng thành công!", null));
     }
 
     /**

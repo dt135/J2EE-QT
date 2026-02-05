@@ -82,7 +82,7 @@ public class CategoryService {
 
     /**
      * Xoa danh muc (ADMIN)
-     * Chi xoa neu khong co sach nao trong danh muc
+     * Xoa ca tat ca sach thuoc danh muc do
      */
     public void deleteCategory(String id) {
         Category category = getCategoryById(id);
@@ -90,10 +90,11 @@ public class CategoryService {
         // Kiem tra xem co sach trong danh muc khong
         long bookCount = bookRepository.countByCategoryId(id);
         if (bookCount > 0) {
-            throw new BadRequestException(
-                    String.format("Khong the xoa danh muc dang chua %d cuon sach", bookCount));
+            // Xoa tat ca sach trong danh muc truoc
+            bookRepository.deleteByCategoryId(id);
         }
 
+        // Sau do xoa danh muc
         categoryRepository.delete(category);
     }
 }

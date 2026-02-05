@@ -33,6 +33,8 @@ public class Invoice {
 
     private Double totalAmount;
 
+    private OrderStatus status;
+
     @CreatedDate
     private LocalDateTime createdAt;
 }

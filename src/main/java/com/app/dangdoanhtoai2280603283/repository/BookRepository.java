@@ -39,6 +39,11 @@ public interface BookRepository extends MongoRepository<Book, String> {
     long countByCategoryId(String categoryId);
 
     /**
+     * Xoa tat ca sach theo categoryId
+     */
+    void deleteByCategoryId(String categoryId);
+
+    /**
      * Lay tat ca sach voi phan trang
      */
     Page<Book> findAll(Pageable pageable);

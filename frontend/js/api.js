@@ -306,20 +306,23 @@ function updateNavbar() {
     const usernameDisplay = document.getElementById('username-display');
     const adminLink = document.getElementById('nav-admin');
     const cartLink = document.getElementById('nav-cart');
+    const ordersLink = document.getElementById('nav-orders');
 
     if (token && user) {
         // Đã đăng nhập
         if (loginLink) loginLink.style.display = 'none';
         if (registerLink) registerLink.style.display = 'none';
 
-        // Ẩn/hiện giỏ hàng và admin dựa trên role
+        // Ẩn/hiện giỏ hàng, đơn hàng và admin dựa trên role
         if (role === 'ADMIN') {
-            // ADMIN: ẩn giỏ hàng, hiện quản lý
+            // ADMIN: ẩn giỏ hàng, ẩn đơn hàng, hiện quản lý
             if (cartLink) cartLink.style.display = 'none';
+            if (ordersLink) ordersLink.style.display = 'none';
             if (adminLink) adminLink.style.display = 'block';
         } else {
-            // USER: hiện giỏ hàng, ẩn quản lý
+            // USER: hiện giỏ hàng, hiện đơn hàng, ẩn quản lý
             if (cartLink) cartLink.style.display = 'block';
+            if (ordersLink) ordersLink.style.display = 'block';
             if (adminLink) adminLink.style.display = 'none';
         }
 
@@ -337,6 +340,7 @@ function updateNavbar() {
         if (userNameDropdown) userNameDropdown.style.display = 'none';
         if (adminLink) adminLink.style.display = 'none';
         if (cartLink) cartLink.style.display = 'none';
+        if (ordersLink) ordersLink.style.display = 'none';
     }
 }
 

@@ -28,6 +28,7 @@ public class CartResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CartItemResponse {
+        private String bookId;
         private Book book;
         private Integer quantity;
         private Double subtotal;

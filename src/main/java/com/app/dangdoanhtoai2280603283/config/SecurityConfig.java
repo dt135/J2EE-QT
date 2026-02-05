@@ -47,6 +47,7 @@ public class SecurityConfig {
                 // Cau hinh authorization
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - khong can xac thuc
+                        .requestMatchers("/", "/index").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/books/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
@@ -65,6 +66,9 @@ public class SecurityConfig {
 
                         // Admin only - User management
                         .requestMatchers("/users/**").hasRole("ADMIN")
+
+                        // Admin only - Order management
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // Authenticated - can dang nhap
                         // Note: /cart/** va /checkout da co @PreAuthorize trong controller

@@ -31,7 +31,11 @@ let editingBookId = null;  // ID sách đang chỉnh sửa
 let editingCategoryId = null; // ID category đang chỉnh sửa
 let categories = [];       // Danh sách category
 let users = [];            // Danh sách người dùng
-let currentTab = 'books';  // Tab hiện tại: books, categories, users
+let currentTab = 'books';  // Tab hiện tại: books, categories, orders, revenue, users
+let orders = [];           // Danh sách đơn hàng
+let revenueData = null;    // Dữ liệu doanh thu
+let currentOrdersPage = 0; // Trang hiện tại của đơn hàng
+let ordersLimit = 10;      // Số đơn hàng mỗi trang
 
 // ============================================
 // INITIALIZATION
@@ -858,33 +862,37 @@ async function deleteUser(userId) {
  */
 function switchTab(tabName) {
     currentTab = tabName;
-    
+
     // Ẩn tất cả các section
     document.querySelectorAll('.admin-tab').forEach(el => {
         el.style.display = 'none';
     });
-    
+
     // Hiển thị tab được chọn
     const tabElement = document.getElementById(`admin-${tabName}-tab`);
     if (tabElement) {
         tabElement.style.display = 'block';
     }
-    
+
     // Cập nhật active state cho nav tabs
     document.querySelectorAll('.nav-tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
     }
-    
+
     // Tải lại dữ liệu cho tab hiện tại
     if (tabName === 'users') {
         fetchUsers();
     } else if (tabName === 'categories') {
         displayCategoryList();
+    } else if (tabName === 'orders') {
+        fetchOrders();
+    } else if (tabName === 'revenue') {
+        initRevenueTab();
     }
 }
 
@@ -905,6 +913,441 @@ function escapeHtml(text) {
 }
 
 // ============================================
+// ORDER MANAGEMENT
+// ============================================
+
+/**
+ * Lấy danh sách đơn hàng
+ */
+async function fetchOrders() {
+    try {
+        showLoading(true);
+
+        const status = document.getElementById('filter-order-status').value;
+        const fromDate = document.getElementById('filter-from-date').value;
+        const toDate = document.getElementById('filter-to-date').value;
+
+        let params = `?page=${currentOrdersPage}&limit=${ordersLimit}`;
+        if (status) params += `&status=${status}`;
+        if (fromDate) params += `&fromDate=${fromDate}`;
+        if (toDate) params += `&toDate=${toDate}`;
+
+        const data = await apiGet(`/admin/orders${params}`);
+        orders = data.content || [];
+
+        displayOrders();
+        updateOrdersPagination(data.total, data.totalPages);
+
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        showToast('Không thể tải danh sách đơn hàng', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+/**
+ * Hiển thị danh sách đơn hàng
+ */
+function displayOrders() {
+    const tbody = document.getElementById('admin-orders-table-body');
+    if (!tbody) return;
+
+    if (orders.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <p class="text-muted mb-0">Không có đơn hàng nào</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = orders.map((order, index) => `
+        <tr>
+            <td>${currentOrdersPage * ordersLimit + index + 1}</td>
+            <td>
+                <strong>${escapeHtml(order.orderNumber)}</strong>
+            </td>
+            <td>${escapeHtml(order.username)}</td>
+            <td>${escapeHtml(order.email)}</td>
+            <td>${formatDate(order.createdAt)}</td>
+            <td>${formatCurrency(order.totalAmount)}</td>
+            <td>
+                <span class="badge ${getOrderStatusBadgeClass(order.status)}">
+                    ${escapeHtml(order.status)}
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-info btn-action" onclick="viewOrderDetail('${order.orderId}')" title="Xem chi tiết">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-warning btn-action" onclick="openUpdateStatusModal('${order.orderId}')" title="Cập nhật trạng thái">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+/**
+ * Lấy class badge cho trạng thái đơn hàng
+ */
+function getOrderStatusBadgeClass(status) {
+    switch(status) {
+        case 'PENDING': return 'bg-warning';
+        case 'CONFIRMED': return 'bg-info';
+        case 'COMPLETED': return 'bg-success';
+        case 'CANCELLED': return 'bg-danger';
+        default: return 'bg-secondary';
+    }
+}
+
+/**
+ * Cập nhật phân trang đơn hàng
+ */
+function updateOrdersPagination(total, totalPages) {
+    const paginationList = document.getElementById('orders-pagination-list');
+    if (!paginationList) return;
+
+    if (totalPages <= 1) {
+        paginationList.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+
+    // Previous button
+    html += `
+        <li class="page-item ${currentOrdersPage === 0 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="goToPage(${currentOrdersPage - 1}); return false;">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+    `;
+
+    // Page numbers
+    for (let i = 0; i < totalPages; i++) {
+        if (i === currentOrdersPage || i === currentOrdersPage - 1 || i === currentOrdersPage + 1 ||
+            i === 0 || i === totalPages - 1) {
+            html += `
+                <li class="page-item ${i === currentOrdersPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="goToPage(${i}); return false;">${i + 1}</a>
+                </li>
+            `;
+        } else if (i === currentOrdersPage - 2 || i === currentOrdersPage + 2) {
+            html += `<li class="page-item disabled"><a class="page-link">...</a></li>`;
+        }
+    }
+
+    // Next button
+    html += `
+        <li class="page-item ${currentOrdersPage === totalPages - 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="goToPage(${currentOrdersPage + 1}); return false;">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    `;
+
+    paginationList.innerHTML = html;
+}
+
+/**
+ * Chuyển đến trang
+ */
+function goToPage(page) {
+    currentOrdersPage = page;
+    fetchOrders();
+}
+
+/**
+ * Xem chi tiết đơn hàng
+ */
+async function viewOrderDetail(orderId) {
+    try {
+        showLoading(true);
+
+        const data = await apiGet(`/admin/orders/${orderId}`);
+
+        const modalContent = document.getElementById('order-detail-content');
+        modalContent.innerHTML = `
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Thông tin khách hàng</h6>
+                    <p class="mb-1"><strong>Mã đơn:</strong> ${escapeHtml(data.orderNumber)}</p>
+                    <p class="mb-1"><strong>Khách hàng:</strong> ${escapeHtml(data.username)}</p>
+                    <p class="mb-1"><strong>Email:</strong> ${escapeHtml(data.email)}</p>
+                    <p class="mb-1"><strong>Ngày đặt:</strong> ${formatDate(data.createdAt)}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Thông tin đơn hàng</h6>
+                    <p class="mb-1"><strong>Tổng tiền:</strong> ${formatCurrency(data.totalAmount)}</p>
+                    <p class="mb-1"><strong>Trạng thái:</strong>
+                        <span class="badge ${getOrderStatusBadgeClass(data.status)}">
+                            ${escapeHtml(data.status)}
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <hr>
+
+            <h6 class="fw-bold mb-3">Chi tiết sản phẩm</h6>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tên sách</th>
+                        <th>Tác giả</th>
+                        <th>Đơn giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.items.map(item => `
+                        <tr>
+                            <td>${escapeHtml(item.bookTitle)}</td>
+                            <td>${escapeHtml(item.bookAuthor)}</td>
+                            <td>${formatCurrency(item.price)}</td>
+                            <td>${item.quantity}</td>
+                            <td>${formatCurrency(item.subtotal)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
+                        <td class="fw-bold">${formatCurrency(data.totalAmount)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+
+        const modal = new bootstrap.Modal(document.getElementById('order-detail-modal'));
+        modal.show();
+
+    } catch (error) {
+        console.error('Error fetching order detail:', error);
+        showToast('Không thể tải chi tiết đơn hàng', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+/**
+ * Mở modal cập nhật trạng thái
+ */
+async function openUpdateStatusModal(orderId) {
+    const order = orders.find(o => o.orderId === orderId);
+    if (!order) {
+        showToast('Không tìm thấy đơn hàng', 'error');
+        return;
+    }
+
+    const statusOptions = [
+        { value: 'PENDING', label: 'Chờ xử lý' },
+        { value: 'CONFIRMED', label: 'Đã xác nhận' },
+        { value: 'COMPLETED', label: 'Hoàn thành' },
+        { value: 'CANCELLED', label: 'Đã hủy' }
+    ];
+
+    const modalContent = document.getElementById('order-detail-content');
+    modalContent.innerHTML = `
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mã đơn hàng</label>
+            <input type="text" class="form-control" value="${escapeHtml(order.orderNumber)}" disabled>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Trạng thái hiện tại</label>
+            <input type="text" class="form-control" value="${escapeHtml(order.status)}" disabled>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Trạng thái mới</label>
+            <select class="form-select" id="new-order-status">
+                ${statusOptions.map(opt => `
+                    <option value="${opt.value}" ${opt.value === order.status ? 'selected' : ''}>
+                        ${opt.label}
+                    </option>
+                `).join('')}
+            </select>
+        </div>
+    `;
+
+    // Thay đổi footer của modal
+    const modalFooter = document.querySelector('#order-detail-modal .modal-footer');
+    modalFooter.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Hủy
+        </button>
+        <button type="button" class="btn btn-primary" onclick="updateOrderStatus('${orderId}')">
+            <i class="fas fa-save"></i> Lưu thay đổi
+        </button>
+    `;
+
+    const modal = new bootstrap.Modal(document.getElementById('order-detail-modal'));
+    modal.show();
+}
+
+/**
+ * Cập nhật trạng thái đơn hàng
+ */
+async function updateOrderStatus(orderId) {
+    const newStatus = document.getElementById('new-order-status').value;
+
+    if (!newStatus) {
+        showToast('Vui lòng chọn trạng thái mới', 'error');
+        return;
+    }
+
+    try {
+        showLoading(true);
+
+        await apiPut(`/admin/orders/${orderId}/status`, { status: newStatus });
+
+        showToast('Cập nhật trạng thái thành công!', 'success');
+
+        // Đóng modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('order-detail-modal'));
+        modal.hide();
+
+        // Tải lại danh sách
+        await fetchOrders();
+
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        showToast(error.message || 'Không thể cập nhật trạng thái', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+/**
+ * Export đơn hàng
+ */
+function exportOrders() {
+    const status = document.getElementById('filter-order-status').value;
+    const fromDate = document.getElementById('filter-from-date').value;
+    const toDate = document.getElementById('filter-to-date').value;
+
+    let params = '?';
+    if (status) params += `status=${status}&`;
+    if (fromDate) params += `fromDate=${fromDate}&`;
+    if (toDate) params += `toDate=${toDate}&`;
+
+    const exportUrl = `${API_BASE_URL}/admin/orders/export${params}`;
+
+    // Tải file CSV
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = 'orders_export.csv';
+
+    // Cần thêm Authorization header
+    fetch(exportUrl, {
+        headers: {
+            'Authorization': `Bearer ${getToken()}`
+        }
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'orders_export.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast('Export đơn hàng thành công!', 'success');
+    })
+    .catch(error => {
+        console.error('Error exporting orders:', error);
+        showToast('Không thể export đơn hàng', 'error');
+    });
+}
+
+// ============================================
+// REVENUE STATISTICS
+// ============================================
+
+/**
+ * Khởi tạo tab doanh thu
+ */
+function initRevenueTab() {
+    // Populate year dropdown
+    const yearSelect = document.getElementById('revenue-year');
+    const currentYear = new Date().getFullYear();
+
+    let years = [];
+    for (let i = currentYear; i >= currentYear - 5; i--) {
+        years.push(i);
+    }
+
+    yearSelect.innerHTML = years.map(year => `
+        <option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>
+    `).join('');
+
+    // Load revenue data
+    fetchRevenueData();
+}
+
+/**
+ * Lấy dữ liệu doanh thu
+ */
+async function fetchRevenueData() {
+    try {
+        showLoading(true);
+
+        const year = document.getElementById('revenue-year').value;
+        revenueData = await apiGet(`/admin/revenue/monthly?year=${year}`);
+
+        displayRevenueData();
+
+    } catch (error) {
+        console.error('Error fetching revenue data:', error);
+        showToast('Không thể tải dữ liệu doanh thu: ' + (error.message || 'Unknown error'), 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+/**
+ * Hiển thị dữ liệu doanh thu
+ */
+function displayRevenueData() {
+    if (!revenueData || !revenueData.monthlyRevenues) {
+        showToast('Dữ liệu doanh thu không hợp lệ', 'error');
+        return;
+    }
+
+    // Update summary cards
+    document.getElementById('total-revenue').textContent = formatCurrency(revenueData.totalRevenue);
+    const totalOrders = revenueData.monthlyRevenues.reduce((sum, month) => sum + month.orderCount, 0);
+    document.getElementById('total-orders').textContent = totalOrders;
+
+    // Update table
+    const tbody = document.getElementById('revenue-table-body');
+    if (tbody) {
+        if (revenueData.monthlyRevenues.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center py-4">
+                        <p class="text-muted mb-0">Không có dữ liệu doanh thu</p>
+                    </td>
+                </tr>
+            `;
+        } else {
+            tbody.innerHTML = revenueData.monthlyRevenues.map(month => `
+                <tr>
+                    <td>${month.monthName}</td>
+                    <td>${formatCurrency(month.revenue)}</td>
+                    <td>${month.orderCount} đơn</td>
+                </tr>
+            `).join('');
+        }
+    }
+}
+
+// ============================================
 // EVENT LISTENERS
 // ============================================
 
@@ -913,27 +1356,48 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('admin-books-table')) {
         initAdmin();
     }
-    
+
     // Nút thêm sách (đã nằm trong tab Books rồi)
     const addBookBtn = document.getElementById('btn-add-book');
     if (addBookBtn) {
         addBookBtn.addEventListener('click', openAddBookModal);
     }
-    
+
     // Form sách
     const bookForm = document.getElementById('book-form');
     if (bookForm) {
         bookForm.addEventListener('submit', handleBookFormSubmit);
     }
-    
+
     // Nút quản lý category chính (trong tab categories)
     const manageCatBtnMain = document.getElementById('btn-manage-categories-main');
     if (manageCatBtnMain) {
         manageCatBtnMain.addEventListener('click', openCategoryModal);
     }
-    
+
+    // Nút lọc đơn hàng
+    const applyFilterBtn = document.getElementById('btn-apply-filter');
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', function() {
+            currentOrdersPage = 0;
+            fetchOrders();
+        });
+    }
+
+    // Nút export đơn hàng
+    const exportOrdersBtn = document.getElementById('btn-export-orders');
+    if (exportOrdersBtn) {
+        exportOrdersBtn.addEventListener('click', exportOrders);
+    }
+
+    // Thay đổi năm thống kê
+    const revenueYearSelect = document.getElementById('revenue-year');
+    if (revenueYearSelect) {
+        revenueYearSelect.addEventListener('change', fetchRevenueData);
+    }
+
     // Nút thêm/sửa category - được gán trong openCategoryModal() và editCategory()
-    
+
     // Tab navigation
     const tabButtons = document.querySelectorAll('.nav-tab-btn');
     tabButtons.forEach(btn => {

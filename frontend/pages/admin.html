@@ -120,6 +120,16 @@
                     </button>
                 </li>
                 <li class="nav-item">
+                    <button class="nav-link nav-tab-btn" data-tab="orders">
+                        <i class="fas fa-shopping-cart"></i> Quản lý đơn hàng
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link nav-tab-btn" data-tab="revenue">
+                        <i class="fas fa-chart-line"></i> Thống kê doanh thu
+                    </button>
+                </li>
+                <li class="nav-item">
                     <button class="nav-link nav-tab-btn" data-tab="users">
                         <i class="fas fa-users"></i> Quản lý người dùng
                     </button>
@@ -250,6 +260,158 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Orders Tab -->
+            <div id="admin-orders-tab" class="admin-tab" style="display: none;">
+                <!-- Orders Header -->
+                <div class="admin-header" style="background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-2">
+                                <i class="fas fa-shopping-cart"></i> Quản lý đơn hàng
+                            </h3>
+                            <p class="mb-0">Xem, cập nhật trạng thái và export đơn hàng</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <button id="btn-export-orders" class="btn btn-light btn-lg">
+                                <i class="fas fa-file-export"></i> Export CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Trạng thái</label>
+                                <select class="form-select" id="filter-order-status">
+                                    <option value="">Tất cả</option>
+                                    <option value="PENDING">Chờ xử lý</option>
+                                    <option value="CONFIRMED">Đã xác nhận</option>
+                                    <option value="COMPLETED">Hoàn thành</option>
+                                    <option value="CANCELLED">Đã hủy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Từ ngày</label>
+                                <input type="datetime-local" class="form-control" id="filter-from-date">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Đến ngày</label>
+                                <input type="datetime-local" class="form-control" id="filter-to-date">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button id="btn-apply-filter" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter"></i> Lọc
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="admin-table">
+                    <div class="table-responsive">
+                        <table class="table" id="admin-orders-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Email</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th style="width: 150px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-orders-table-body">
+                                <!-- Orders will be loaded here by JavaScript -->
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Đang tải danh sách đơn hàng...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav id="orders-pagination">
+                        <ul class="pagination justify-content-center" id="orders-pagination-list">
+                            <!-- Pagination will be added here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Revenue Tab -->
+            <div id="admin-revenue-tab" class="admin-tab" style="display: none;">
+                <!-- Revenue Header -->
+                <div class="admin-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-2">
+                                <i class="fas fa-chart-line"></i> Thống kê doanh thu
+                            </h3>
+                            <p class="mb-0">Thống kê doanh thu theo tháng</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <select class="form-select" id="revenue-year" style="max-width: 150px; display: inline-block;">
+                                <!-- Years will be populated -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Tổng doanh thu</h5>
+                                <h2 id="total-revenue">0 đ</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Tổng đơn hàng hoàn thành</h5>
+                                <h2 id="total-orders">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Table -->
+                <div class="admin-table">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">Chi tiết doanh thu theo tháng</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Tháng</th>
+                                            <th>Doanh thu</th>
+                                            <th>Số đơn hàng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="revenue-table-body">
+                                        <!-- Revenue data will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -355,6 +517,30 @@
             </div>
         </div>
     </div>
+
+    <!-- ============================================
+         ORDER DETAIL MODAL
+         ============================================ -->
+    <div class="modal fade" id="order-detail-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-invoice"></i> Chi tiết đơn hàng
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="order-detail-content">
+                    <!-- Order detail will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- ============================================
          FOOTER
@@ -420,7 +606,7 @@
     
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Custom JS -->
     <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>

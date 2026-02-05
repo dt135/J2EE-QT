@@ -121,6 +121,7 @@ public class CartService {
                 totalAmount += subtotal;
 
                 itemResponses.add(CartResponse.CartItemResponse.builder()
+                        .bookId(item.getBookId())
                         .book(book)
                         .quantity(item.getQuantity())
                         .subtotal(subtotal)
