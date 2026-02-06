@@ -1,7 +1,9 @@
 package com.app.dangdoanhtoai2280603283.config;
 
+import com.app.dangdoanhtoai2280603283.security.CookieOAuth2AuthorizationRequestRepository;
 import com.app.dangdoanhtoai2280603283.security.CustomUserDetailsService;
 import com.app.dangdoanhtoai2280603283.security.JwtAuthenticationFilter;
+import com.app.dangdoanhtoai2280603283.security.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +36,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final CookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,6 +53,8 @@ public class SecurityConfig {
                         // Public endpoints - khong can xac thuc
                         .requestMatchers("/", "/index").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/login/oauth2/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/books/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
@@ -91,6 +97,27 @@ public class SecurityConfig {
 
                 // JWT filter truoc UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // ===== OAUTH2 LOGIN (DANG NHAP GOOGLE) =====
+        http
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(auth -> auth
+                                .authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                                .baseUri("/oauth2/authorization")
+                        )
+                        .redirectionEndpoint(redirect -> redirect
+                                .baseUri("/login/oauth2/code/*")
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureUrl("/frontend/pages/login.html?error=oauth2_error")
+                );
+
+        // Session chi duoc tao khi can thiet (cho OAuth2)
+        http
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation().migrateSession()
+                );
 
         return http.build();
     }
